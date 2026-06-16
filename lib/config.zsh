@@ -9,6 +9,7 @@
 : ${ZSH_AI_GEMINI_MODEL:="gemini-2.5-flash"}  # Fast Gemini 2.5 model
 : ${ZSH_AI_OPENAI_MODEL:="gpt-5.4-mini"}  # Default to GPT-5.4 mini (gpt-5-mini is deprecated)
 : ${ZSH_AI_OPENAI_URL:="https://api.openai.com/v1/chat/completions"}  # Default to OpenAI
+: ${ZSH_AI_OPENAI_THINKING:=""}  # Configure thinking for supported models: 0 or 1, default unset/empty
 : ${ZSH_AI_QWEN_MODEL:="qwen-flash"}  # Default to qwen-flash (fast, low-cost Qwen3 tier)
 : ${ZSH_AI_QWEN_URL:="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"}  # Default to Qwen API
 : ${ZSH_AI_ANTHROPIC_MODEL:="claude-haiku-4-5"}  # Default Anthropic model
@@ -60,6 +61,11 @@ _zsh_ai_validate_config() {
         if [[ -z "$OPENAI_API_KEY" && -z "$ZSH_AI_OPENAI_API_KEY" && "$ZSH_AI_OPENAI_URL" == "https://api.openai.com/v1/chat/completions" ]]; then
             echo "zsh-ai: Warning: OPENAI_API_KEY not set. Plugin will not function."
             echo "zsh-ai: Set OPENAI_API_KEY or use ZSH_AI_PROVIDER=ollama for local models."
+            return 1
+        fi
+
+        if [[ -n "$ZSH_AI_OPENAI_THINKING" && "$ZSH_AI_OPENAI_THINKING" != "0" && "$ZSH_AI_OPENAI_THINKING" != "1" ]]; then
+            echo "zsh-ai: Error: ZSH_AI_OPENAI_THINKING must be 0, 1, or unset."
             return 1
         fi
     elif [[ "$ZSH_AI_PROVIDER" == "qwen" ]]; then

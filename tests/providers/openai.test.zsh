@@ -399,4 +399,42 @@ run_test "Includes Authorization header when API key is set" test_openai_query_w
 run_test "ZSH_AI_OPENAI_API_KEY passes validation for default URL" test_openai_zsh_ai_key_passes_validation_for_default_url
 run_test "ZSH_AI_OPENAI_API_KEY takes precedence over OPENAI_API_KEY" test_openai_zsh_ai_key_takes_precedence
 run_test "Falls back to OPENAI_API_KEY when ZSH_AI_OPENAI_API_KEY is not set" test_openai_falls_back_to_openai_api_key
+
+# Tests for ZSH_AI_OPENAI_THINKING
+echo ""
+echo "Running OpenAI-compatible thinking flag tests..."
+
+test_openai_thinking_unset_omits_param() {
+    unset ZSH_AI_OPENAI_THINKING
+    local captured_payload=$(capture_openai_payload_for_model "gpt-5-mini")
+    assert_not_contains "$captured_payload" '"chat_template_kwargs"'
+}
+
+test_openai_thinking_enabled_sets_true() {
+    export ZSH_AI_OPENAI_THINKING=1
+    local captured_payload=$(capture_openai_payload_for_model "gpt-5-mini")
+    assert_contains "$captured_payload" '"enable_thinking": true'
+}
+
+test_openai_thinking_disabled_sets_false() {
+    export ZSH_AI_OPENAI_THINKING=0
+    local captured_payload=$(capture_openai_payload_for_model "gpt-5-mini")
+    assert_contains "$captured_payload" '"enable_thinking": false'
+}
+
+test_openai_thinking_invalid_value_returns_error() {
+    export ZSH_AI_OPENAI_THINKING="invalid"
+
+    local result
+    result=$(_zsh_ai_validate_config 2>&1)
+    local exit_code=$?
+
+    # Should not pass validation since it is not 0, 1, or unset
+    assert_equals "$exit_code" "1"
+}
+
+run_test "ZSH_AI_OPENAI_THINKING unset omits chat_template_kwargs parameter" test_openai_thinking_unset_omits_param
+run_test "ZSH_AI_OPENAI_THINKING=1 sets enable_thinking true" test_openai_thinking_enabled_sets_true
+run_test "ZSH_AI_OPENAI_THINKING=0 sets enable_thinking false" test_openai_thinking_disabled_sets_false
+run_test "Invalid ZSH_AI_OPENAI_THINKING value returns error" test_openai_thinking_invalid_value_returns_error
 finish_tests
