@@ -13,13 +13,13 @@ _zsh_ai_openai_supports_temperature() {
 _zsh_ai_query_openai() {
     local query="$1"
     local response
-    
+
     # Build context
     local context=$(_zsh_ai_build_context)
     local escaped_context=$(_zsh_ai_escape_json "$context")
     local system_prompt=$(_zsh_ai_get_system_prompt "$escaped_context")
     local escaped_system_prompt=$(_zsh_ai_escape_json "$system_prompt")
-    
+
     # Prepare the JSON payload - escape quotes in the query
     local escaped_query=$(_zsh_ai_escape_json "$query")
 
@@ -34,6 +34,13 @@ _zsh_ai_query_openai() {
         temperature_param=$',\n    "temperature": 0.3'
     fi
 
+    local thinking_param=""
+    case "$ZSH_AI_OPENAI_THINKING" in
+        "") ;; # Don't override upstream defaults when unset
+        0) thinking_param=$',\n    "chat_template_kwargs": { "enable_thinking": false }' ;;
+        1) thinking_param=$',\n    "chat_template_kwargs": { "enable_thinking": true }' ;;
+    esac
+
     local json_payload=$(cat <<EOF
 {
     "model": "${ZSH_AI_OPENAI_MODEL}",
@@ -47,11 +54,11 @@ _zsh_ai_query_openai() {
             "content": "$escaped_query"
         }
     ],
-    "$token_param": 256${temperature_param}
+    "$token_param": 256${temperature_param}${thinking_param}
 }
 EOF
 )
-    
+
     # Call the API - only add auth header if API key is set
     # ZSH_AI_OPENAI_API_KEY takes precedence (useful for LiteLLM and other proxies)
     local auth_args=()
@@ -62,15 +69,15 @@ EOF
         "${auth_args[@]}" \
         --header "content-type: application/json" \
         --data "$json_payload" 2>&1)
-    
+
     if [[ $? -ne 0 ]]; then
         echo "Error: Failed to connect to OpenAI API"
         return 1
     fi
-    
+
     # Debug: Uncomment to see raw response
     # echo "DEBUG: Raw response: $response" >&2
-    
+
     # Extract the content from the response
     # Try using jq if available, otherwise fall back to sed/grep
     if command -v jq &> /dev/null; then

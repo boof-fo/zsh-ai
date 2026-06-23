@@ -133,6 +133,8 @@ export ZSH_AI_OPENAI_API_KEY="sk-your-proxy-key"
 
 `ZSH_AI_OPENAI_API_KEY` takes priority over `OPENAI_API_KEY`.
 
+`ZSH_AI_OPENAI_THINKING` sets the `chat_template_kwargs.enable_thinking` parameter, which is a non-standard API that controls thinking output for reasoning models with chat templates. Set to `0` to disable, `1` to enable, or leave unset for upstream defaults.
+
 ## Load zsh-ai
 
 Put the load line after your provider block in `~/.zshrc`.
