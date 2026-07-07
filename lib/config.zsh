@@ -10,6 +10,7 @@
 : ${ZSH_AI_OPENAI_MODEL:="gpt-5.4-mini"}  # Default to GPT-5.4 mini (gpt-5-mini is deprecated)
 : ${ZSH_AI_OPENAI_URL:="https://api.openai.com/v1/chat/completions"}  # Default to OpenAI
 : ${ZSH_AI_OPENAI_THINKING:=""}  # Configure thinking for supported models: 0 or 1, default unset/empty
+: ${ZSH_AI_OPENAI_REASONING_EFFORT:=""}  # Configure reasoning effort for supported OpenAI-compatible models
 : ${ZSH_AI_QWEN_MODEL:="qwen-flash"}  # Default to qwen-flash (fast, low-cost Qwen3 tier)
 : ${ZSH_AI_QWEN_URL:="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"}  # Default to Qwen API
 : ${ZSH_AI_ANTHROPIC_MODEL:="claude-haiku-4-5"}  # Default Anthropic model
@@ -68,6 +69,7 @@ _zsh_ai_validate_config() {
             echo "zsh-ai: Error: ZSH_AI_OPENAI_THINKING must be 0, 1, or unset."
             return 1
         fi
+
     elif [[ "$ZSH_AI_PROVIDER" == "qwen" ]]; then
         if [[ -z "$QWEN_API_KEY" ]]; then
             echo "zsh-ai: Warning: QWEN_API_KEY not set. Plugin will not function."

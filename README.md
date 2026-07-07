@@ -100,6 +100,12 @@ export ZSH_AI_PROVIDER="openai"
 export OPENAI_API_KEY="your-key-here"
 ```
 
+OpenAI-compatible endpoints can also pass provider-specific reasoning controls:
+
+```bash
+export ZSH_AI_OPENAI_REASONING_EFFORT="none"
+```
+
 Add command preferences without replacing the built-in quoting rules:
 
 ```bash
