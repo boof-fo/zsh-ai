@@ -33,6 +33,7 @@ EOF
 test_openai_query_success() {
     export OPENAI_API_KEY="test-key"
     export ZSH_AI_OPENAI_MODEL="gpt-5.4-mini"
+    export ZSH_AI_OPENAI_URL="https://api.openai.com/v1/chat/completions"
 
     local result=$(_zsh_ai_query_openai "list files")
     assert_equals "$result" "ls -la"
@@ -41,6 +42,7 @@ test_openai_query_success() {
 test_openai_query_error_response() {
     export OPENAI_API_KEY="test-key"
     export ZSH_AI_OPENAI_MODEL="gpt-5.4-mini"
+    export ZSH_AI_OPENAI_URL="https://api.openai.com/v1/chat/completions"
     
     # Override curl to return an error
     curl() {
@@ -437,4 +439,38 @@ run_test "ZSH_AI_OPENAI_THINKING unset omits chat_template_kwargs parameter" tes
 run_test "ZSH_AI_OPENAI_THINKING=1 sets enable_thinking true" test_openai_thinking_enabled_sets_true
 run_test "ZSH_AI_OPENAI_THINKING=0 sets enable_thinking false" test_openai_thinking_disabled_sets_false
 run_test "Invalid ZSH_AI_OPENAI_THINKING value returns error" test_openai_thinking_invalid_value_returns_error
+
+# Tests for ZSH_AI_OPENAI_REASONING_EFFORT
+echo ""
+echo "Running OpenAI-compatible reasoning effort tests..."
+
+test_openai_reasoning_effort_unset_omits_param() {
+    export ZSH_AI_PROVIDER="openai"
+    unset ZSH_AI_OPENAI_THINKING
+    unset ZSH_AI_OPENAI_REASONING_EFFORT
+    local captured_payload=$(capture_openai_payload_for_model "qwen/qwen3.6-27b")
+    assert_not_contains "$captured_payload" '"reasoning_effort"'
+}
+
+test_openai_reasoning_effort_sets_value() {
+    export ZSH_AI_PROVIDER="openai"
+    unset ZSH_AI_OPENAI_THINKING
+    export ZSH_AI_OPENAI_REASONING_EFFORT="none"
+    local captured_payload=$(capture_openai_payload_for_model "qwen/qwen3.6-27b")
+    unset ZSH_AI_OPENAI_REASONING_EFFORT
+    assert_contains "$captured_payload" '"reasoning_effort": "none"'
+}
+
+test_openai_reasoning_effort_escapes_value() {
+    export ZSH_AI_PROVIDER="openai"
+    unset ZSH_AI_OPENAI_THINKING
+    export ZSH_AI_OPENAI_REASONING_EFFORT='custom"tier'
+    local captured_payload=$(capture_openai_payload_for_model "qwen/qwen3.6-27b")
+    unset ZSH_AI_OPENAI_REASONING_EFFORT
+    assert_contains "$captured_payload" '"reasoning_effort": "custom\"tier"'
+}
+
+run_test "ZSH_AI_OPENAI_REASONING_EFFORT unset omits reasoning_effort parameter" test_openai_reasoning_effort_unset_omits_param
+run_test "ZSH_AI_OPENAI_REASONING_EFFORT sets reasoning_effort value" test_openai_reasoning_effort_sets_value
+run_test "ZSH_AI_OPENAI_REASONING_EFFORT escapes reasoning_effort value" test_openai_reasoning_effort_escapes_value
 finish_tests

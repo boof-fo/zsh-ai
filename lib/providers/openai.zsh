@@ -41,6 +41,11 @@ _zsh_ai_query_openai() {
         1) thinking_param=$',\n    "chat_template_kwargs": { "enable_thinking": true }' ;;
     esac
 
+    local reasoning_effort_param=""
+    if [[ -n "$ZSH_AI_OPENAI_REASONING_EFFORT" ]]; then
+        reasoning_effort_param=$',\n    "reasoning_effort": "'"$(_zsh_ai_escape_json "$ZSH_AI_OPENAI_REASONING_EFFORT")"'"'
+    fi
+
     local json_payload=$(cat <<EOF
 {
     "model": "${ZSH_AI_OPENAI_MODEL}",
@@ -54,7 +59,7 @@ _zsh_ai_query_openai() {
             "content": "$escaped_query"
         }
     ],
-    "$token_param": 256${temperature_param}${thinking_param}
+    "$token_param": 256${temperature_param}${thinking_param}${reasoning_effort_param}
 }
 EOF
 )

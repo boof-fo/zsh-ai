@@ -135,6 +135,8 @@ export ZSH_AI_OPENAI_API_KEY="sk-your-proxy-key"
 
 `ZSH_AI_OPENAI_THINKING` sets the `chat_template_kwargs.enable_thinking` parameter, which is a non-standard API that controls thinking output for reasoning models with chat templates. Set to `0` to disable, `1` to enable, or leave unset for upstream defaults.
 
+`ZSH_AI_OPENAI_REASONING_EFFORT` sets the `reasoning_effort` parameter for OpenAI-compatible endpoints that support it. For example, Groq supports `none` and `default` for `qwen/qwen3.6-27b`; set `none` to disable reasoning tokens. Common values are `none`, `default`, `minimal`, `low`, `medium`, and `high`; leave unset for upstream defaults.
+
 ## Load zsh-ai
 
 Put the load line after your provider block in `~/.zshrc`.

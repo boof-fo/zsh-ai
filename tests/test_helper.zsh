@@ -182,6 +182,8 @@ setup_test_env() {
     export ZSH_AI_PROVIDER=""
     export ANTHROPIC_API_KEY=""
     export ZSH_AI_MODEL=""
+    unset ZSH_AI_TRIGGER
+    unset ZSH_AI_COMMENT_HOOK
     
     # Reset mocks
     reset_mocks
@@ -197,6 +199,8 @@ teardown_test_env() {
     unset ZSH_AI_PROVIDER
     unset ANTHROPIC_API_KEY
     unset ZSH_AI_MODEL
+    unset ZSH_AI_TRIGGER
+    unset ZSH_AI_COMMENT_HOOK
     unset ZSH_AI_TEST_MODE
 }
 
