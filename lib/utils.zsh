@@ -43,7 +43,9 @@ _zsh_ai_query() {
         _zsh_ai_query_grok "$query"
     elif [[ "$ZSH_AI_PROVIDER" == "mistral" ]]; then
         _zsh_ai_query_mistral "$query"
-    else
+    elif [[ "$ZSH_AI_PROVIDER" == "custom" ]]; then
+        _zsh_ai_query_custom "$query"
+	else
         _zsh_ai_query_anthropic "$query"
     fi
 }
