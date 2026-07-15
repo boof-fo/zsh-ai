@@ -149,7 +149,7 @@ _zsh_ai_query_custom() {
 	local system_prompt_file response ret
 
 	local system_prompt_file=$(mktemp)
-	_zsh_ai_get_system_prompt > "$system_prompt_file"
+	_zsh_ai_get_system_prompt "$(_zsh_ai_build_context)" > "$system_prompt_file"
 
 	response=$(
 		{
