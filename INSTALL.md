@@ -151,7 +151,7 @@ export ZSH_AI_PROVIDER="custom"
 
 _zsh_ai_query_custom() {
 	local query="${1-}"
-	local system_prompt_file response
+	local system_prompt_file response ret
 
 	local system_prompt_file=$(mktemp)
 	_zsh_ai_get_system_prompt > "$system_prompt_file"
@@ -173,9 +173,10 @@ _zsh_ai_query_custom() {
 		}
 	)
 
-	if (( status != 0 )); then
+	ret=$?
+	if (( ret != 0 )); then
 		echo "Error: Something went wrong while running codex."
-		return "$status"
+		return $ret
 	fi
 
 	printf '%s\n' "$response"
