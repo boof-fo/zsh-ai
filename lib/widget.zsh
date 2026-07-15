@@ -34,7 +34,7 @@ _zsh_ai_accept_line() {
         
         # Start the API query in background using the shared function
         # Only redirect stdout to tmpfile, let stderr go to /dev/null to avoid mixing error output
-        (_zsh_ai_execute_command "$query" > "$tmpfile" 2>/dev/null) &
+        (_zsh_ai_query "$query" > "$tmpfile" 2>/dev/null) &
         local pid=$!
         
         # Animate while waiting

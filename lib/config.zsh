@@ -38,8 +38,8 @@ _zsh_ai_comment_hook_enabled() {
 
 # Provider validation
 _zsh_ai_validate_config() {
-    if [[ "$ZSH_AI_PROVIDER" != "anthropic" ]] && [[ "$ZSH_AI_PROVIDER" != "ollama" ]] && [[ "$ZSH_AI_PROVIDER" != "gemini" ]] && [[ "$ZSH_AI_PROVIDER" != "qwen" ]] && [[ "$ZSH_AI_PROVIDER" != "openai" ]] && [[ "$ZSH_AI_PROVIDER" != "grok" ]] && [[ "$ZSH_AI_PROVIDER" != "mistral" ]]; then
-        echo "zsh-ai: Error: Invalid provider '$ZSH_AI_PROVIDER'. Use 'anthropic', 'ollama', 'gemini', 'openai', 'qwen', 'grok', or 'mistral'."
+    if [[ "$ZSH_AI_PROVIDER" != "anthropic" ]] && [[ "$ZSH_AI_PROVIDER" != "ollama" ]] && [[ "$ZSH_AI_PROVIDER" != "gemini" ]] && [[ "$ZSH_AI_PROVIDER" != "qwen" ]] && [[ "$ZSH_AI_PROVIDER" != "openai" ]] && [[ "$ZSH_AI_PROVIDER" != "grok" ]] && [[ "$ZSH_AI_PROVIDER" != "mistral" ]] && [[ "$ZSH_AI_PROVIDER" != "custom" ]]; then
+        echo "zsh-ai: Error: Invalid provider '$ZSH_AI_PROVIDER'. Use 'anthropic', 'ollama', 'gemini', 'openai', 'qwen', 'grok', 'mistral', or 'custom'."
         return 1
     fi
 
@@ -86,6 +86,12 @@ _zsh_ai_validate_config() {
         if [[ -z "$MISTRAL_API_KEY" ]]; then
             echo "zsh-ai: Warning: MISTRAL_API_KEY not set. Plugin will not function."
             echo "zsh-ai: Set MISTRAL_API_KEY or use ZSH_AI_PROVIDER=ollama for local models."
+            return 1
+        fi
+    elif [[ "$ZSH_AI_PROVIDER" == "custom" ]]; then
+        if (( ! $+functions[_zsh_ai_query_custom] )); then
+            echo "zsh-ai: Warning: _zsh_ai_query_custom is not defined. Plugin will not function."
+            echo "zsh-ai: Define _zsh_ai_query_custom to use a custom provider."
             return 1
         fi
     fi

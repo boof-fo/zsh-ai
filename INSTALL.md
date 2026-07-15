@@ -137,6 +137,50 @@ export ZSH_AI_OPENAI_API_KEY="sk-your-proxy-key"
 
 `ZSH_AI_OPENAI_REASONING_EFFORT` sets the `reasoning_effort` parameter for OpenAI-compatible endpoints that support it. For example, Groq supports `none` and `default` for `qwen/qwen3.6-27b`; set `none` to disable reasoning tokens. Common values are `none`, `default`, `minimal`, `low`, `medium`, and `high`; leave unset for upstream defaults.
 
+## Custom Provider
+
+Set `ZSH_AI_PROVIDER` to `custom` and define `_zsh_ai_query_custom` before `zsh-ai` loads. The function receives the natural-language query as its first argument. It must print only the generated command to standard output. If the provider fails, the function must print a message prefixed with `Error:` to the standard output, and/or return a non-zero status. This example uses the Codex CLI:
+
+```zsh
+export ZSH_AI_PROVIDER="custom"
+
+_zsh_ai_query_custom() {
+	local query="${1-}"
+	local system_prompt_file response ret
+
+	local system_prompt_file=$(mktemp)
+	_zsh_ai_get_system_prompt "$(_zsh_ai_build_context)" > "$system_prompt_file"
+
+	response=$(
+		{
+			codex exec \
+				--ephemeral \
+				--ignore-user-config \
+				--skip-git-repo-check \
+				--sandbox read-only \
+				--model 'gpt-5.6-luna' \
+				--config model_reasoning_effort=low \
+				--config project_doc_max_bytes=0 \
+				--config "model_instructions_file=\"$system_prompt_file\"" \
+				-- "$query" \
+				2>/dev/null
+		} always {
+			rm -f -- "$system_prompt_file"
+		}
+	)
+
+	ret=$?
+	if (( ret != 0 )); then
+		echo "Error: Something went wrong while running codex."
+		return $ret
+	fi
+
+	printf '%s\n' "$response"
+}
+```
+
+Replace the model and CLI options with those supported by your Codex setup, or replace the function body entirely to call any local command or remote API.
+
 ## Load zsh-ai
 
 Put the load line after your provider block in `~/.zshrc`.

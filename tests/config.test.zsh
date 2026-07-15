@@ -79,6 +79,53 @@ test_validates_openai_provider() {
     teardown_test_env
 }
 
+test_validates_custom_provider() {
+      local had_custom_function=$+functions[_zsh_ai_query_custom]
+      local saved_custom_function="${functions[_zsh_ai_query_custom]-}"
+
+      {
+          setup_test_env
+          export ZSH_AI_PROVIDER="custom"
+
+          _zsh_ai_query_custom() {
+              return 0
+          }
+
+          _zsh_ai_validate_config >/dev/null 2>&1
+          assert_equals "$?" "0"
+      } always {
+          teardown_test_env
+
+          if (( had_custom_function )); then
+              functions[_zsh_ai_query_custom]="$saved_custom_function"
+          else
+              unfunction _zsh_ai_query_custom 2>/dev/null
+          fi
+      }
+}
+
+test_rejects_missing_custom_provider_function() {
+      local had_custom_function=$+functions[_zsh_ai_query_custom]
+      local saved_custom_function="${functions[_zsh_ai_query_custom]-}"
+
+      {
+          setup_test_env
+          export ZSH_AI_PROVIDER="custom"
+          unfunction _zsh_ai_query_custom 2>/dev/null
+
+          _zsh_ai_validate_config >/dev/null 2>&1
+          assert_equals "$?" "1"
+      } always {
+          teardown_test_env
+
+          if (( had_custom_function )); then
+              functions[_zsh_ai_query_custom]="$saved_custom_function"
+          else
+              unfunction _zsh_ai_query_custom 2>/dev/null
+          fi
+      }
+}
+
 test_comment_hook_enabled_by_default() {
     setup_test_env
     unset ZSH_AI_COMMENT_HOOK
@@ -119,6 +166,8 @@ run_test "Validates ollama provider" test_validates_ollama_provider
 run_test "Rejects invalid provider" test_rejects_invalid_provider
 run_test "Validates gemini provider" test_validates_gemini_provider
 run_test "Validates openai provider" test_validates_openai_provider
+run_test "Validates custom provider" test_validates_custom_provider
+run_test "Rejects missing custom provider function" test_rejects_missing_custom_provider_function
 run_test "Comment hook enabled by default" test_comment_hook_enabled_by_default
 run_test "Comment hook can be disabled" test_comment_hook_can_be_disabled
 run_test "Default trigger is '# '" test_default_trigger_is_hash
