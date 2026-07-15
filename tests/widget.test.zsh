@@ -458,7 +458,7 @@ test_custom_trigger_is_processed() {
     # Echo back the query so we can verify the trigger prefix was stripped.
     # The widget runs this in a background subshell and reads its stdout from a
     # temp file, so we rely on a real temp file rather than mocking cat/mktemp.
-    _zsh_ai_execute_command() {
+    _zsh_ai_query() {
         printf "query:%s" "$1"
     }
 

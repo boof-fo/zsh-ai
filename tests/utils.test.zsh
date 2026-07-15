@@ -30,6 +30,44 @@ test_routes_to_anthropic_provider() {
     teardown_test_env
 }
 
+test_routes_to_custom_provider() {
+    setup_test_env
+    export ZSH_AI_PROVIDER="custom"
+
+    # Mock custom provider
+    _zsh_ai_query_custom() {
+        echo "custom:$1"
+    }
+    
+    local output
+    output=$(_zsh_ai_query "test query")
+    assert_equals "$output" "custom:test query"
+
+    teardown_test_env
+}
+
+test_provider_non_zero_exit_code() {
+    setup_test_env
+    export ZSH_AI_PROVIDER="anthropic"
+    export ANTHROPIC_API_KEY="test-key"
+
+    _zsh_ai_query_anthropic() {
+        echo "Not prefixed with 'Error:'"
+        return 1
+    }
+
+    # Capture output with stderr
+    local output
+    output=$(zsh-ai "test query" 2>&1)
+    local result=$?
+
+    assert_equals "$result" "1"
+    assert_contains "$output" "Failed to generate command"
+    assert_contains "$output" "Not prefixed with 'Error:'"
+
+    teardown_test_env
+}
+
 test_routes_to_ollama_provider() {
     setup_test_env
     export ZSH_AI_PROVIDER="ollama"
@@ -219,7 +257,7 @@ test_combines_multiple_arguments() {
     export ANTHROPIC_API_KEY="test-key"
     
     # Mock execute command function
-    _zsh_ai_execute_command() {
+    _zsh_ai_query() {
         echo "find . -name '*.py'"
     }
     
@@ -247,7 +285,7 @@ test_puts_generated_command_in_buffer() {
     export ANTHROPIC_API_KEY="test-key"
     
     # Mock execute command function
-    _zsh_ai_execute_command() {
+    _zsh_ai_query() {
         echo "ls -la"
     }
     
@@ -275,7 +313,7 @@ test_no_execution_happens() {
     export ANTHROPIC_API_KEY="test-key"
     
     # Mock execute command function
-    _zsh_ai_execute_command() {
+    _zsh_ai_query() {
         echo "pwd"
     }
     
@@ -311,7 +349,7 @@ test_shows_loading_spinner() {
     export ANTHROPIC_API_KEY="test-key"
     
     # Mock execute command function with delay to simulate API call
-    _zsh_ai_execute_command() {
+    _zsh_ai_query() {
         sleep 0.3
         echo "ls -la"
     }
@@ -471,6 +509,8 @@ test_get_system_prompt_with_empty_extension() {
 echo "Running utils tests..."
 run_test "Routes to Anthropic provider when configured" test_routes_to_anthropic_provider
 run_test "Routes to Ollama provider when configured" test_routes_to_ollama_provider
+run_test "Routes to custom provider when configured" test_routes_to_custom_provider
+run_test "Throws an error when provider returns non-zero exit code" test_provider_non_zero_exit_code
 run_test "Checks Ollama availability before querying" test_checks_ollama_availability_before_querying
 run_test "Shows usage when called without arguments" test_shows_usage_without_arguments
 run_test "Shows Ollama model in usage for Ollama provider" test_shows_ollama_model_in_usage
