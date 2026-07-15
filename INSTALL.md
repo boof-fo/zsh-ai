@@ -139,12 +139,7 @@ export ZSH_AI_OPENAI_API_KEY="sk-your-proxy-key"
 
 ## Custom Provider
 
-Set `ZSH_AI_PROVIDER` to `custom` and define `_zsh_ai_query_custom` before
-`zsh-ai` loads. The function receives the natural-language query as its first
-argument. It must print only the generated command to standard output, and
-return a non-zero status when the provider fails, optionally printing an error message to standard output.
-
-This example uses the Codex CLI:
+Set `ZSH_AI_PROVIDER` to `custom` and define `_zsh_ai_query_custom` before `zsh-ai` loads. The function receives the natural-language query as its first argument. It must print only the generated command to standard output. If the provider fails, the function must print a message prefixed with `Error:` to the standard output, and/or return a non-zero status. This example uses the Codex CLI:
 
 ```zsh
 export ZSH_AI_PROVIDER="custom"
@@ -183,8 +178,7 @@ _zsh_ai_query_custom() {
 }
 ```
 
-Replace the model and CLI options with those supported by your Codex setup, or
-replace the function body entirely to call any local command or remote API.
+Replace the model and CLI options with those supported by your Codex setup, or replace the function body entirely to call any local command or remote API.
 
 ## Load zsh-ai
 

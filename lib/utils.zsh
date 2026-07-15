@@ -50,21 +50,6 @@ _zsh_ai_query() {
     fi
 }
 
-# Shared function to handle AI command execution
-_zsh_ai_execute_command() {
-    local query="$1"
-    local cmd=$(_zsh_ai_query "$query")
-    
-    if [[ -n "$cmd" ]] && [[ "$cmd" != "Error:"* ]] && [[ "$cmd" != "API Error:"* ]]; then
-        echo "$cmd"
-        return 0
-    else
-        # Return error
-        echo "$cmd"
-        return 1
-    fi
-}
-
 # Optional: Add a helper function for users who prefer explicit commands
 zsh-ai() {
     if [[ $# -eq 0 ]]; then
@@ -101,7 +86,7 @@ zsh-ai() {
     setopt local_options no_monitor no_notify no_bg_nice
 
     # Start the API query in background
-    (_zsh_ai_execute_command "$query" > "$tmpfile" 2>/dev/null) &
+    (_zsh_ai_query "$query" > "$tmpfile" 2>/dev/null) &
     local pid=$!
     
     # Animate while waiting
