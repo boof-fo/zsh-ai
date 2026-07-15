@@ -160,6 +160,7 @@ _zsh_ai_query_custom() {
 				--sandbox read-only \
 				--model 'gpt-5.6-luna' \
 				--config model_reasoning_effort=low \
+				--config project_doc_max_bytes=0 \
 				--config "model_instructions_file=\"$system_prompt_file\"" \
 				-- "$query" \
 				2>/dev/null
