@@ -86,7 +86,8 @@ zsh-ai() {
     setopt local_options no_monitor no_notify no_bg_nice
 
     # Start the API query in background
-    (_zsh_ai_query "$query" > "$tmpfile" 2>/dev/null) &
+    # >| so the redirect works when the user has noclobber set (mktemp already created the file)
+    (_zsh_ai_query "$query" >| "$tmpfile" 2>/dev/null) &
     local pid=$!
     
     # Animate while waiting
