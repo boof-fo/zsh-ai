@@ -103,9 +103,10 @@ test_checks_ollama_availability_before_querying() {
     local result=$?
     
     assert_equals "$result" "1"
-    assert_contains "$output" "Ollama is not running"
+    assert_contains "$output" "Ollama is not reachable"
     assert_contains "$output" "http://localhost:11434"
     assert_contains "$output" "ollama serve"
+    assert_contains "$output" "no /v1"
 
     teardown_test_env
 }

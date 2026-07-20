@@ -3,8 +3,10 @@
 # Ollama API provider for zsh-ai
 
 # Function to check if Ollama is running
+# -f makes HTTP errors fail the check, so a wrong URL (e.g. a /v1 suffix
+# that 404s) is caught here instead of surfacing later as a parse error
 _zsh_ai_check_ollama() {
-    curl -s "${ZSH_AI_OLLAMA_URL}/api/tags" >/dev/null 2>&1
+    curl -sf "${ZSH_AI_OLLAMA_URL}/api/tags" >/dev/null 2>&1
     return $?
 }
 
@@ -55,6 +57,7 @@ EOF
                 echo "Ollama Error: $error"
             else
                 echo "Error: Unable to parse Ollama response"
+                [[ -n "$response" ]] && echo "Response: ${response:0:200}"
             fi
             return 1
         fi
@@ -75,6 +78,7 @@ EOF
 
         if [[ -z "$result" ]]; then
             echo "Error: Unable to parse response (install jq for better reliability)"
+            [[ -n "$response" ]] && echo "Response: ${response:0:200}"
             return 1
         fi
 

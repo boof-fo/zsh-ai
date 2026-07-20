@@ -28,8 +28,9 @@ _zsh_ai_query() {
     if [[ "$ZSH_AI_PROVIDER" == "ollama" ]]; then
         # Check if Ollama is running first
         if ! _zsh_ai_check_ollama; then
-            echo "Error: Ollama is not running at $ZSH_AI_OLLAMA_URL"
+            echo "Error: Ollama is not reachable at $ZSH_AI_OLLAMA_URL"
             echo "Start Ollama with: ollama serve"
+            echo "If it's already running, ZSH_AI_OLLAMA_URL must be the base URL (e.g. http://localhost:11434, no /v1)"
             return 1
         fi
         _zsh_ai_query_ollama "$query"

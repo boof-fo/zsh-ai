@@ -26,15 +26,24 @@ Or switch to Ollama:
 export ZSH_AI_PROVIDER="ollama"
 ```
 
-## Ollama Is Not Running
+## Ollama Is Not Reachable
 
 ```bash
-Error: Ollama is not running at http://localhost:11434
+Error: Ollama is not reachable at http://localhost:11434
 ```
+
+If Ollama isn't running yet:
 
 ```bash
 ollama serve
 ollama pull llama3.2
+```
+
+If it's already running, check `ZSH_AI_OLLAMA_URL`. It must be the base URL with
+no path suffix (`/v1` is for OpenAI-compatible clients, not this plugin):
+
+```bash
+export ZSH_AI_OLLAMA_URL="http://localhost:11434"
 ```
 
 ## Nothing Happens With `#`
