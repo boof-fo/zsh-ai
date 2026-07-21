@@ -93,20 +93,24 @@ test_checks_ollama_availability_before_querying() {
     export ZSH_AI_PROVIDER="ollama"
     export ZSH_AI_OLLAMA_URL="http://localhost:11434"
     
-    # Mock Ollama check to fail
+    # Mock Ollama check to fail (the real check prints the user-facing error itself)
     _zsh_ai_check_ollama() {
+        echo "Error: mock check failed"
         return 1
     }
-    
+
+    _zsh_ai_query_ollama() {
+        echo "should not run"
+    }
+
     local output
     output=$(_zsh_ai_query "test query")
     local result=$?
-    
+
     assert_equals "$result" "1"
-    assert_contains "$output" "Ollama is not running"
-    assert_contains "$output" "http://localhost:11434"
-    assert_contains "$output" "ollama serve"
-    
+    assert_contains "$output" "Error: mock check failed"
+    assert_not_contains "$output" "should not run"
+
     teardown_test_env
 }
 
@@ -343,6 +347,39 @@ test_no_execution_happens() {
     teardown_test_env
 }
 
+test_works_with_noclobber_set() {
+    setup_test_env
+    export ZSH_AI_PROVIDER="anthropic"
+    export ANTHROPIC_API_KEY="test-key"
+
+    # Simulate a user with noclobber in their zshrc (issue #46):
+    # the tmpfile redirect must not fail on the file mktemp already created
+    setopt localoptions noclobber
+
+    # Mock query function
+    _zsh_ai_query() {
+        echo "ls -la"
+    }
+
+    # Mock print -z so the success path doesn't touch the buffer stack
+    print() {
+        if [[ "$1" == "-z" ]]; then
+            :
+        else
+            builtin print "$@"
+        fi
+    }
+
+    local output
+    output=$(zsh-ai "list files" 2>&1)
+    local result=$?
+
+    assert_equals "$result" "0"
+    assert_not_contains "$output" "Failed to generate command"
+
+    teardown_test_env
+}
+
 test_shows_loading_spinner() {
     setup_test_env
     export ZSH_AI_PROVIDER="anthropic"
@@ -521,6 +558,7 @@ run_test "Handles empty response in zsh-ai command" test_handles_empty_response_
 run_test "Combines multiple arguments in zsh-ai command" test_combines_multiple_arguments
 run_test "Puts generated command in buffer" test_puts_generated_command_in_buffer
 run_test "No execution happens" test_no_execution_happens
+run_test "Works with noclobber set" test_works_with_noclobber_set
 run_test "Shows loading spinner during command generation" test_shows_loading_spinner
 run_test "System prompt includes all rules" test_get_system_prompt_includes_all_rules
 run_test "System prompt handles complex context" test_get_system_prompt_with_complex_context

@@ -34,12 +34,87 @@ test_check_ollama_running_failure() {
     
     # Mock curl failure
     mock_command "curl" "" 1
-    
-    _zsh_ai_check_ollama
+
+    local output
+    output=$(_zsh_ai_check_ollama)
     local result=$?
-    
+
     assert_equals "$result" "1"
-    
+    assert_contains "$output" "Ollama is not reachable"
+    assert_contains "$output" "no /v1"
+
+    teardown_test_env
+}
+
+test_check_ollama_fails_on_http_error() {
+    setup_test_env
+    export ZSH_AI_OLLAMA_MODEL="llama3.2"
+    export ZSH_AI_OLLAMA_URL="http://localhost:11434/v1"
+
+    # Simulate a running server that 404s the wrong path (e.g. a /v1 suffix
+    # in the URL): curl only fails on HTTP errors when -f is passed
+    curl() {
+        local arg
+        for arg in "$@"; do
+            if [[ "$arg" == -* && "$arg" == *f* ]]; then
+                return 22
+            fi
+        done
+        printf "404 page not found"
+        return 0
+    }
+
+    local output
+    output=$(_zsh_ai_check_ollama)
+    local result=$?
+
+    assert_greater_than "$result" "0"
+    assert_contains "$output" "Ollama is not reachable"
+
+    teardown_test_env
+}
+
+test_parse_error_shows_raw_response_with_jq() {
+    setup_test_env
+    export ZSH_AI_OLLAMA_MODEL="llama3.2"
+    export ZSH_AI_OLLAMA_URL="http://localhost:11434"
+
+    # Mock jq as available
+    mock_jq "true"
+
+    # Mock a non-JSON body (what a misconfigured URL actually returns)
+    mock_curl_response '404 page not found' 0
+
+    local output
+    output=$(_zsh_ai_query_ollama "test query")
+    local result=$?
+
+    assert_equals "$result" "1"
+    assert_contains "$output" "Unable to parse Ollama response"
+    assert_contains "$output" "404 page not found"
+
+    teardown_test_env
+}
+
+test_parse_error_shows_raw_response_without_jq() {
+    setup_test_env
+    export ZSH_AI_OLLAMA_MODEL="llama3.2"
+    export ZSH_AI_OLLAMA_URL="http://localhost:11434"
+
+    # Mock jq as unavailable
+    mock_jq "false"
+
+    # Mock a non-JSON body (what a misconfigured URL actually returns)
+    mock_curl_response '404 page not found' 0
+
+    local output
+    output=$(_zsh_ai_query_ollama "test query")
+    local result=$?
+
+    assert_equals "$result" "1"
+    assert_contains "$output" "install jq"
+    assert_contains "$output" "404 page not found"
+
     teardown_test_env
 }
 
@@ -405,6 +480,9 @@ test_handles_thinking_model_response() {
 echo "Running ollama provider tests..."
 run_test "Check if Ollama is running - success" test_check_ollama_running_success
 run_test "Check if Ollama is running - failure" test_check_ollama_running_failure
+run_test "Check fails on HTTP error (wrong URL path)" test_check_ollama_fails_on_http_error
+run_test "Parse error shows raw response (with jq)" test_parse_error_shows_raw_response_with_jq
+run_test "Parse error shows raw response (without jq)" test_parse_error_shows_raw_response_without_jq
 run_test "Successful API call with jq available" test_successful_api_call_with_jq
 run_test "Successful API call without jq" test_successful_api_call_without_jq
 run_test "Handles API error response with jq" test_handles_api_error_response_with_jq

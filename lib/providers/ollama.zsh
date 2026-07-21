@@ -2,10 +2,17 @@
 
 # Ollama API provider for zsh-ai
 
-# Function to check if Ollama is running
+# Function to check if Ollama is reachable, printing the user-facing error when it isn't
+# -f makes HTTP errors fail the check, so a wrong URL (e.g. a /v1 suffix
+# that 404s) is caught here instead of surfacing later as a parse error
 _zsh_ai_check_ollama() {
-    curl -s "${ZSH_AI_OLLAMA_URL}/api/tags" >/dev/null 2>&1
-    return $?
+    if curl -sf "${ZSH_AI_OLLAMA_URL}/api/tags" >/dev/null 2>&1; then
+        return 0
+    fi
+    echo "Error: Ollama is not reachable at $ZSH_AI_OLLAMA_URL"
+    echo "Start Ollama with: ollama serve"
+    echo "If it's already running, ZSH_AI_OLLAMA_URL must be the base URL (e.g. http://localhost:11434, no /v1)"
+    return 1
 }
 
 # Function to call Ollama API
@@ -55,6 +62,7 @@ EOF
                 echo "Ollama Error: $error"
             else
                 echo "Error: Unable to parse Ollama response"
+                [[ -n "$response" ]] && echo "Response: ${response:0:200}"
             fi
             return 1
         fi
@@ -75,6 +83,7 @@ EOF
 
         if [[ -z "$result" ]]; then
             echo "Error: Unable to parse response (install jq for better reliability)"
+            [[ -n "$response" ]] && echo "Response: ${response:0:200}"
             return 1
         fi
 
