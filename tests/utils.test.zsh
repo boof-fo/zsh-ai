@@ -93,20 +93,23 @@ test_checks_ollama_availability_before_querying() {
     export ZSH_AI_PROVIDER="ollama"
     export ZSH_AI_OLLAMA_URL="http://localhost:11434"
     
-    # Mock Ollama check to fail
+    # Mock Ollama check to fail (the real check prints the user-facing error itself)
     _zsh_ai_check_ollama() {
+        echo "Error: mock check failed"
         return 1
     }
-    
+
+    _zsh_ai_query_ollama() {
+        echo "should not run"
+    }
+
     local output
     output=$(_zsh_ai_query "test query")
     local result=$?
-    
+
     assert_equals "$result" "1"
-    assert_contains "$output" "Ollama is not reachable"
-    assert_contains "$output" "http://localhost:11434"
-    assert_contains "$output" "ollama serve"
-    assert_contains "$output" "no /v1"
+    assert_contains "$output" "Error: mock check failed"
+    assert_not_contains "$output" "should not run"
 
     teardown_test_env
 }

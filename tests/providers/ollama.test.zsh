@@ -34,12 +34,15 @@ test_check_ollama_running_failure() {
     
     # Mock curl failure
     mock_command "curl" "" 1
-    
-    _zsh_ai_check_ollama
+
+    local output
+    output=$(_zsh_ai_check_ollama)
     local result=$?
-    
+
     assert_equals "$result" "1"
-    
+    assert_contains "$output" "Ollama is not reachable"
+    assert_contains "$output" "no /v1"
+
     teardown_test_env
 }
 
@@ -61,10 +64,12 @@ test_check_ollama_fails_on_http_error() {
         return 0
     }
 
-    _zsh_ai_check_ollama
+    local output
+    output=$(_zsh_ai_check_ollama)
     local result=$?
 
     assert_greater_than "$result" "0"
+    assert_contains "$output" "Ollama is not reachable"
 
     teardown_test_env
 }

@@ -26,13 +26,8 @@ _zsh_ai_query() {
     local query="$1"
 
     if [[ "$ZSH_AI_PROVIDER" == "ollama" ]]; then
-        # Check if Ollama is running first
-        if ! _zsh_ai_check_ollama; then
-            echo "Error: Ollama is not reachable at $ZSH_AI_OLLAMA_URL"
-            echo "Start Ollama with: ollama serve"
-            echo "If it's already running, ZSH_AI_OLLAMA_URL must be the base URL (e.g. http://localhost:11434, no /v1)"
-            return 1
-        fi
+        # The check prints its own user-facing error when Ollama is unreachable
+        _zsh_ai_check_ollama || return 1
         _zsh_ai_query_ollama "$query"
     elif [[ "$ZSH_AI_PROVIDER" == "gemini" ]]; then
         _zsh_ai_query_gemini "$query"
