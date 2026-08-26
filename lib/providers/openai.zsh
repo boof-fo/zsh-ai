@@ -59,7 +59,7 @@ _zsh_ai_query_openai() {
             "content": "$escaped_query"
         }
     ],
-    "$token_param": 256${temperature_param}${thinking_param}${reasoning_effort_param}
+    "$token_param": ${ZSH_AI_OPENAI_MAX_TOKENS:-256}${temperature_param}${thinking_param}${reasoning_effort_param}
 }
 EOF
 )
