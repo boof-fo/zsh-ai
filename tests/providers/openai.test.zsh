@@ -433,6 +433,7 @@ test_openai_thinking_invalid_value_returns_error() {
 
     # Should not pass validation since it is not 0, 1, or unset
     assert_equals "$exit_code" "1"
+    unset ZSH_AI_OPENAI_THINKING
 }
 
 run_test "ZSH_AI_OPENAI_THINKING unset omits chat_template_kwargs parameter" test_openai_thinking_unset_omits_param
@@ -490,14 +491,12 @@ test_openai_max_tokens_uses_custom_value() {
 }
 
 test_openai_max_tokens_invalid_value_returns_error() {
-    unset ZSH_AI_OPENAI_THINKING
-    unset ZSH_AI_OPENAI_REASONING_EFFORT
-    unset ZSH_AI_OPENAI_MAX_TOKENS
     export ZSH_AI_OPENAI_MAX_TOKENS="abc"
     local result
     result=$(_zsh_ai_validate_config 2>&1)
     local exit_code=$?
     assert_equals "$exit_code" "1"
+    unset ZSH_AI_OPENAI_MAX_TOKENS
     assert_contains "$result" "ZSH_AI_OPENAI_MAX_TOKENS must be a positive integer"
 }
 
