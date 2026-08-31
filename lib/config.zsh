@@ -71,7 +71,7 @@ _zsh_ai_validate_config() {
             return 1
         fi
         
-        if [[ -n "$ZSH_AI_OPENAI_MAX_TOKENS" && "$ZSH_AI_OPENAI_MAX_TOKENS" != <1-> ]]; then
+        if [[ "$ZSH_AI_OPENAI_MAX_TOKENS" != <1-> ]]; then
             echo "zsh-ai: Error: ZSH_AI_OPENAI_MAX_TOKENS must be a positive integer."
             return 1
         fi
